@@ -9,6 +9,7 @@ class PDF extends FPDF
 function Header()
 {
     $fechaActual = date('d-m-Y');
+    $this->SetTextColor(0, 0, 0);
     $this->SetFont('Times','B',20);
     $this->Image('img/growsLogo.png',10,15,40);
     $this->setXY(70,20);
@@ -20,10 +21,10 @@ function Header()
     $this->ln(20);
 }
 
-// Pie de página
+
 function Footer()
 {
-       // Posición: a 1,5 cm del final
+       $this->SetTextColor(0, 0, 0);
        $this->SetY(-15);
        // Arial italic 8
        $this->SetFont('Arial','B',8);
@@ -149,28 +150,29 @@ $pdf->AddPage();
 $pdf->SetMargins(10,10,10); // Margenes 
 $pdf->SetAutoPageBreak(true,20);
 
+// Obtener el ancho de la página
+$pageWidth = $pdf->GetPageWidth();
+
+// Obtener el ancho de la tabla
+$tableWidth = 100; // Ajustar este valor según el ancho de tu tabla
+
+// Calcular la cantidad de espacio a la izquierda de la tabla
+$leftSpace = ($pageWidth - $tableWidth) / 2;
+
+// Establecer la posición X para centrar la tabla
+
+
 $pdf->Ln(5);
-$pdf->SetX(10);
+$pdf->SetX(30);
 $pdf->SetFont('Helvetica','B',12);
-$pdf->Cell(10,7,'ID',1,0,'C',0); 
-$pdf->Cell(35,7,'Nombre',1,0,'C',0);
-$pdf->Cell(35,7,'Apellido',1,0,'C',0);
-$pdf->Cell(35,7,utf8_decode ('Trabajo'),1,0,'C',0);
-$pdf->Cell(35,7,'Fecha de inicio',1,1,'C',0);
-
-
-/*$pdf->SetFillColor(155, 164, 181); // Color de Fondo RGB*/
-
-$pdf->SetDrawColor(61,61,61); // Color de Linea RGB
-
-$pdf->Ln(0.5);
-
+$pdf->SetTextColor(255, 255, 255);
+$pdf->SetFillColor(27, 73, 101);
+$pdf->Cell(10,7,'ID',1,0,'C', true); 
+$pdf->Cell(35,7,'Nombre',1,0,'C', true);
+$pdf->Cell(35,7,'Apellido',1,0,'C',true);
+$pdf->Cell(35,7,utf8_decode ('Trabajo'),1,0,'C',true);
+$pdf->Cell(35,7,'Fecha de inicio',1,1,'C',true);
 $pdf->SetFont('Times','',12);
-// El anco de las celdas 
-//$pdf->SetWidths(array(10, 35, 35, 35, 35, 35));
-
-
-///$pdf->Row(array('id',utf8_decode('Marca'), 'Modelo', 'Año', 'Placa','Color'),30);
 
 try{
     $connect = new EmployeeCrud();
@@ -178,18 +180,27 @@ try{
 }catch(Exception $e){
     echo "Error: ".$e->getMessage();
 }
+
+$par = true;
     foreach($tbl_employees as $employeesRegister){
-        $pdf->SetX(10);
-        $pdf->Cell(10,7,$employeesRegister['id'],1,0,'C',0);
-        $pdf->Cell(35,7,$employeesRegister['firstName'],1,0,'C',0);
-        $pdf->Cell(35,7,$employeesRegister['lastName'],1,0,'C',0);
-        $pdf->Cell(35,7,$employeesRegister['job'],1,0,'C',0);
-        $pdf->Cell(35,7,$employeesRegister['startedAt'],1,0,'C',0);
+        
+        if($par){
+            $pdf->SetFillColor(98, 182, 203);
+            $par = false;
+        }
+        else{
+            $pdf->SetFillColor(108, 117, 125);
+            $par = true;
+        }
+        $pdf->SetX(30);
+        $pdf->Cell(10,7,$employeesRegister['id'],1,0,'C',true);
+        $pdf->Cell(35,7,$employeesRegister['firstName'],1,0,'C',true);
+        $pdf->Cell(35,7,utf8_decode($employeesRegister['lastName']),1,0,'C',true);
+        $pdf->Cell(35,7,$employeesRegister['job'],1,0,'C',true);
+        $pdf->Cell(35,7,$employeesRegister['startedAt'],1,0,'C',true);
         $pdf->Ln();
     }
 $pdf->AddPage();
 $pdf->Output('I', 'Empleados Grows.pdf');
 header('Content-Disposition: attachment; filename="Empleados Grows.pdf"');
-
-
 ?>
